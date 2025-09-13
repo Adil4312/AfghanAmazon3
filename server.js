@@ -29,9 +29,20 @@ if (productCount.count === 0) {
   insert.run('Traditional Hat', 12.99, 'Clothing', 'Kandahar');
 }
 
-// Middleware
+// Middleware - MUST come before routes
 app.use(bodyParser.json());
-app.use(express.static('public'));
+
+// Serve static files with proper headers
+app.use('/public', express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    }
+    if (filePath.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+  }
+}));
 
 // API routes
 app.get('/api/products', (req, res) => {
@@ -67,7 +78,7 @@ app.get('/pashto.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'pashto.html'));
 });
 
-// Handle all other routes - serve index.html for SPA
+// Handle all other routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
