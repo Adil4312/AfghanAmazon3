@@ -1,3 +1,4 @@
+
 // Global variables
 let currentUser = null;
 let cart = [];
@@ -522,6 +523,54 @@ function checkout() {
   cart = [];
   updateCart();
   updateCartCount();
+}
+// Load categories with better error handling
+async function loadCategories() {
+  try {
+    const response = await fetch('/api/categories');
+    
+    // Check if response is OK
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    // Check if response is JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Response is not JSON');
+    }
+    
+    const categories = await response.json();
+    populateCategoryDropdown(categories);
+  } catch (error) {
+    console.error('Error loading categories:', error);
+    // Fallback to default categories
+    const fallbackCategories = ['Grocery', 'Clothing', 'Accessories', 'Home', 'Electronics'];
+    populateCategoryDropdown(fallbackCategories);
+  }
+}
+
+// Update all other API calls with similar error handling
+async function loadCities() {
+  try {
+    const response = await fetch('/api/cities');
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Response is not JSON');
+    }
+    
+    const cities = await response.json();
+    populateCityDropdowns(cities);
+  } catch (error) {
+    console.error('Error loading cities:', error);
+    const defaultCities = ['Jalalabad', 'Kabul', 'Kandahar', 'Herat', 'Balkh'];
+    populateCityDropdowns(defaultCities);
+  }
 }
 
 // Logout function

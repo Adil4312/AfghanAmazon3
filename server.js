@@ -119,17 +119,24 @@ if (branchCount.count === 0) {
     VALUES (?, ?, ?, ?, ?)
   `);
 
-  // Kabul branches
+  // Kabul branches (10 branches)
   const kabulBranches = [
     ['Kabul Central', 'Kabul', 'Street 1, District 1', '+93 123 456 789', '8:00 AM - 10:00 PM'],
     ['Kabul North', 'Kabul', 'Street 2, District 2', '+93 123 456 790', '8:00 AM - 10:00 PM'],
-    ['Kabul South', 'Kabul', 'Street 3, District 3', '+93 123 456 791', '8:00 AM - 10:00 PM']
+    ['Kabul South', 'Kabul', 'Street 3, District 3', '+93 123 456 791', '8:00 AM - 10:00 PM'],
+    ['Kabul East', 'Kabul', 'Street 4, District 4', '+93 123 456 792', '8:00 AM - 10:00 PM'],
+    ['Kabul West', 'Kabul', 'Street 5, District 5', '+93 123 456 793', '8:00 AM - 10:00 PM'],
+    ['Kabul Commercial', 'Kabul', 'Street 6, District 6', '+93 123 456 794', '8:00 AM - 10:00 PM'],
+    ['Kabul Market', 'Kabul', 'Street 7, District 7', '+93 123 456 795', '8:00 AM - 10:00 PM'],
+    ['Kabul Downtown', 'Kabul', 'Street 8, District 8', '+93 123 456 796', '8:00 AM - 10:00 PM'],
+    ['Kabul Residential', 'Kabul', 'Street 9, District 9', '+93 123 456 797', '8:00 AM - 10:00 PM'],
+    ['Kabul Express', 'Kabul', 'Street 10, District 10', '+93 123 456 798', '8:00 AM - 10:00 PM']
   ];
 
-  // Other cities branches
+  // Other cities branches (10 each)
   const cities = ['Jalalabad', 'Kandahar', 'Herat', 'Balkh'];
   cities.forEach(city => {
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 1; i <= 10; i++) {
       insertBranch.run(
         `${city} Branch ${i}`,
         city,
@@ -147,22 +154,62 @@ if (branchCount.count === 0) {
 
 // Middleware
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
-// Socket.io for real-time features
-io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
-  
-  socket.on('join-branch', (branchId) => {
-    socket.join(`branch-${branchId}`);
-  });
-  
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
-  });
+// Add CSP headers to fix security policy issues
+app.use((req, res, next) => {
+  res.setHeader('Content-Security-Policy', 
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline'; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "font-src 'self' https://fonts.gstatic.com; " +
+    "img-src 'self' data:;"
+  );
+  next();
 });
 
-// API Routes
+// API Routes - MUST COME BEFORE STATIC FILES
+
+// Get all categories
+app.get('/api/categories', (req, res) => {
+  try {
+    const stmt = db.prepare('SELECT DISTINCT category FROM products WHERE category IS NOT NULL ORDER BY category');
+    const categories = stmt.all().map(row => row.category);
+    res.json(categories);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all cities
+app.get('/api/cities', (req, res) => {
+  try {
+    const stmt = db.prepare('SELECT DISTINCT city FROM branches ORDER BY city');
+    const cities = stmt.all().map(row => row.city);
+    res.json(cities);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get branches by city
+app.get('/api/branches', (req, res) => {
+  try {
+    const { city } = req.query;
+    let query = 'SELECT * FROM branches';
+    let params = [];
+    
+    if (city) {
+      query += ' WHERE city = ?';
+      params.push(city);
+    }
+    
+    const stmt = db.prepare(query);
+    const branches = stmt.all(...params);
+    res.json(branches);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Get all products
 app.get('/api/products', (req, res) => {
@@ -195,142 +242,31 @@ app.get('/api/products', (req, res) => {
   }
 });
 
-// Get product by ID
-app.get('/api/products/:id', (req, res) => {
+// Get products with filtering
+app.get('/api/products/filter', (req, res) => {
   try {
-    const stmt = db.prepare('SELECT * FROM products WHERE id = ?');
-    const product = stmt.get(req.params.id);
-    
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-    
-    res.json(product);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Add new product
-app.post('/api/products', (req, res) => {
-  try {
-    const { name, price, category, description, location, branch_id, stock } = req.body;
-    
-    const stmt = db.prepare(`
-      INSERT INTO products (name, price, category, description, location, branch_id, stock)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `);
-    
-    const result = stmt.run(name, price, category, description, location, branch_id, stock);
-    
-    res.json({
-      id: result.lastInsertRowid,
-      name,
-      price,
-      category,
-      description,
-      location,
-      branch_id,
-      stock
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get all branches
-app.get('/api/branches', (req, res) => {
-  try {
-    const { city } = req.query;
-    let query = 'SELECT * FROM branches';
+    const { city, branch, category } = req.query;
+    let query = 'SELECT * FROM products WHERE 1=1';
     let params = [];
     
-    if (city) {
-      query += ' WHERE city = ?';
+    if (city && city !== 'all') {
+      query += ' AND location = ?';
       params.push(city);
     }
     
+    if (branch && branch !== 'all') {
+      query += ' AND branch_id = ?';
+      params.push(branch);
+    }
+    
+    if (category && category !== 'all') {
+      query += ' AND category = ?';
+      params.push(category);
+    }
+    
     const stmt = db.prepare(query);
-    const branches = stmt.all(...params);
-    res.json(branches);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get cities
-app.get('/api/cities', (req, res) => {
-  try {
-    const stmt = db.prepare('SELECT DISTINCT city FROM branches ORDER BY city');
-    const cities = stmt.all().map(row => row.city);
-    res.json(cities);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// User registration
-app.post('/api/register', (req, res) => {
-  try {
-    const { name, email, password, phone, address, city } = req.body;
-    
-    const checkStmt = db.prepare('SELECT * FROM users WHERE email = ?');
-    const existingUser = checkStmt.get(email);
-    
-    if (existingUser) {
-      return res.status(400).json({ error: 'User already exists' });
-    }
-    
-    const stmt = db.prepare(`
-      INSERT INTO users (name, email, password, phone, address, city)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
-    
-    const result = stmt.run(name, email, password, phone, address, city);
-    
-    res.json({
-      id: result.lastInsertRowid,
-      name,
-      email,
-      phone,
-      address,
-      city
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Create order
-app.post('/api/orders', (req, res) => {
-  try {
-    const { customer_id, items, total, shipping_address, payment_method } = req.body;
-    
-    const stmt = db.prepare(`
-      INSERT INTO orders (customer_id, items, total, shipping_address, payment_method)
-      VALUES (?, ?, ?, ?, ?)
-    `);
-    
-    const result = stmt.run(customer_id, JSON.stringify(items), total, JSON.stringify(shipping_address), payment_method);
-    
-    // Notify relevant branch about new order
-    if (items.length > 0 && items[0].branch_id) {
-      io.to(`branch-${items[0].branch_id}`).emit('new-order', {
-        orderId: result.lastInsertRowid,
-        items,
-        total
-      });
-    }
-    
-    res.json({
-      id: result.lastInsertRowid,
-      customer_id,
-      items,
-      total,
-      shipping_address,
-      payment_method,
-      status: 'pending'
-    });
+    const products = stmt.all(...params);
+    res.json(products);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -341,10 +277,18 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    database: 'SQLite',
-    message: 'Server is running successfully with SQLite database'
+    message: 'API is working correctly'
   });
 });
+
+// Serve static files - THIS MUST COME AFTER API ROUTES
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    }
+  }
+}));
 
 // Serve HTML files
 app.get('/', (req, res) => {
