@@ -6,7 +6,7 @@
       "use": "@vercel/node"
     },
     {
-      "src": "client/build/**/*",
+      "src": "public/**/*",
       "use": "@vercel/static"
     }
   ],
@@ -17,12 +17,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/client/build/$1"
+      "dest": "/public/$1"
     }
-  ],
-  "env": {
-    "MONGODB_URI": "@mongodb-uri",
-    "JWT_SECRET": "@jwt-secret",
-    "STRIPE_SECRET_KEY": "@stripe-secret-key"
-  }
+  ]
 }
