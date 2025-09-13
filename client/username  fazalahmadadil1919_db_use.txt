@@ -1,0 +1,4 @@
+username : fazalahmadadil1919_db_user
+pass word :   OIBVuWbTT0hoeIu7
+
+mongodb+srv://fazalahmadadil1919_db_user:<db_password>@cluster0.a2ksopu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
