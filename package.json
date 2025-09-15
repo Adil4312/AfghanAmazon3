@@ -9,7 +9,10 @@
   "dependencies": {
     "express": "^4.18.2"
   },
-  "keywords": ["ecommerce", "afghanistan"],
+  "keywords": [
+    "ecommerce",
+    "afghanistan"
+  ],
   "author": "Adil4312",
   "license": "MIT"
 }

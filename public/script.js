@@ -95,16 +95,16 @@ function populateBranchDropdowns(branches) {
 }
 
 // Load categories
+// Load categories with error handling
 async function loadCategories() {
   try {
     const response = await fetch('/api/categories');
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      throw new Error('Response is not JSON');
+    if (response.ok) {
+      const categories = await response.json();
+      populateCategoryDropdown(categories);
+    } else {
+      throw new Error('Failed to load categories');
     }
-    const categories = await response.json();
-    populateCategoryDropdown(categories);
   } catch (error) {
     console.error('Error loading categories:', error);
     const fallbackCategories = ['Grocery', 'Clothing', 'Accessories', 'Home', 'Electronics'];
@@ -112,6 +112,38 @@ async function loadCategories() {
   }
 }
 
+// Load cities with error handling
+async function loadCities() {
+  try {
+    const response = await fetch('/api/cities');
+    if (response.ok) {
+      const cities = await response.json();
+      populateCityDropdowns(cities);
+    } else {
+      throw new Error('Failed to load cities');
+    }
+  } catch (error) {
+    console.error('Error loading cities:', error);
+    const defaultCities = ['Kabul', 'Jalalabad', 'Kandahar', 'Herat', 'Balkh'];
+    populateCityDropdowns(defaultCities);
+  }
+}
+
+// Load products with error handling
+async function loadProducts() {
+  try {
+    const response = await fetch('/api/products');
+    if (response.ok) {
+      const products = await response.json();
+      displayProducts(products);
+    } else {
+      throw new Error('Failed to load products');
+    }
+  } catch (error) {
+    console.error('Error loading products:', error);
+    displayProducts(getMockProducts());
+  }
+}
 function populateCategoryDropdown(categories) {
   const categoryDropdown = document.getElementById('category-filter');
   if (categoryDropdown) {
