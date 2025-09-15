@@ -78,3 +78,23 @@
   min-width: 2rem;
   text-align: center;
 }
+
+/* Add your blue (#1a2b4a) and gold (#ffd700) theme */
+.header {
+  background-color: #1a2b4a;
+  color: #ffd700;
+  padding: 1rem;
+}
+
+.main-title {
+  color: #1a2b4a;
+}
+
+.action-button {
+  background-color: #ffd700;
+  color: #1a2b4a;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
