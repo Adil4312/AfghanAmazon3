@@ -1,27 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<style>
-  /* Basic test styles */
-  body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    color: white !important;
-    font-family: Arial, sans-serif !important;
-    margin: 0;
-    padding: 20px;
-  }
-  .header {
-    background: rgba(0, 0, 0, 0.5) !important;
-    padding: 20px !important;
-    text-align: center !important;
-    border-radius: 10px !important;
-  }
-</style>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Afghan Amazon - World Class Shopping</title>
-  <<link rel="stylesheet" href="/public/styles.css">
-<script src="/public/script.js"></script>&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
   <header class="header">
@@ -29,7 +13,7 @@
       <h1>Afghan Amazon</h1>
     </div>
     <nav class="nav">
-      <a href="/pashto.html" class="lang-switch">پښتو نسخه</a>
+      <a href="pashto.html" class="lang-switch">پښتو نسخه</a>
       <a href="#" onclick="logout()" class="logout-btn">Logout</a>
     </nav>
   </header>
@@ -52,6 +36,39 @@
     <h1 class="main-title">Welcome to Afghan Amazon</h1>
     <h2 class="subtitle">World Class Shopping Experience Across Afghanistan</h2>
     
+    <!-- Filter Section -->
+    <section id="filters" class="content-section">
+      <h2 class="section-title">Find Products</h2>
+      
+      <div class="filter-grid">
+        <div class="filter-group">
+          <label for="city-filter">Select City:</label>
+          <select id="city-filter" class="filter-dropdown" onchange="selectCity(this.value)">
+            <option value="all">All Cities</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label for="branch-filter">Select Branch:</label>
+          <select id="branch-filter" class="filter-dropdown" onchange="selectBranch(this.value)">
+            <option value="all">All Branches</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label for="category-filter">Select Category:</label>
+          <select id="category-filter" class="filter-dropdown" onchange="selectCategory(this.value)">
+            <option value="all">All Categories</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <button onclick="filterProducts()" class="action-button">Apply Filters</button>
+          <button onclick="resetFilters()" class="secondary-button">Reset</button>
+        </div>
+      </div>
+    </section>
+    
     <!-- Branches Map Section -->
     <section id="branches-map" class="content-section">
       <h2 class="section-title">Our Branches Network</h2>
@@ -72,7 +89,7 @@
     </section>
     
     <!-- Authentication Section -->
-    <section id="auth" class="content-section hidden-content">
+    <section id="auth" class="content-section">
       <h2 class="section-title">Register</h2>
       <div class="input-group">
         <input id="reg-username" placeholder="Username" class="input-field">
@@ -92,7 +109,7 @@
     </section>
     
     <!-- Seller Panel -->
-    <section id="seller-panel" class="content-section hidden-content" style="display:none;">
+    <section id="seller-panel" class="content-section hidden-content">
       <h2 class="section-title">Seller Dashboard</h2>
       <div class="input-group">
         <input id="product-name" placeholder="Product Name" class="input-field">
@@ -103,57 +120,24 @@
         <button onclick="addProduct()" class="action-button">Add Product</button>
       </div>
     </section>
-<!-- Filter Section -->
-<section id="filters" class="content-section">
-  <h2 class="section-title">Find Products</h2>
-  
-  <div class="filter-grid">
-    <div class="filter-group">
-      <label for="city-filter">Select City:</label>
-      <select id="city-filter" class="filter-dropdown" onchange="selectCity(this.value)">
-        <option value="all">All Cities</option>
-      </select>
-    </div>
-    
-    <div class="filter-group">
-      <label for="branch-filter">Select Branch:</label>
-      <select id="branch-filter" class="filter-dropdown" onchange="selectBranch(this.value)">
-        <option value="all">All Branches</option>
-      </select>
-    </div>
-    
-    <div class="filter-group">
-      <label for="category-filter">Select Category:</label>
-      <select id="category-filter" class="filter-dropdown" onchange="selectCategory(this.value)">
-        <option value="all">All Categories</option>
-      </select>
-    </div>
-    
-    <div class="filter-group">
-      <button onclick="filterProducts()" class="action-button">Apply Filters</button>
-      <button onclick="resetFilters()" class="secondary-button">Reset</button>
-    </div>
-  </div>
-</section>
     
     <!-- Products Section -->
-    <section id="products" class="content-section hidden-content">
+    <section id="products" class="content-section">
       <h2 class="section-title">Products</h2>
       <p class="section-description">Discover all the essentials you need for your home and daily life.</p>
       <p class="section-description">Click a category to explore items by city and branch.</p>
       <div id="category-menu" class="category-menu">
         <button onclick="filterProducts('Grocery')" class="category-button">Grocery</button>
-        <button onclick="filterProducts('Wearing Stuff')" class="category-button">Wearing Stuff</button>
-        <button onclick="filterProducts('Electronic')" class="category-button">Electronic</button>
-        <button onclick="filterProducts('Sports')" class="category-button">Sports</button>
-        <button onclick="filterProducts('Home')" class="category-button">Home</button>
+        <button onclick="filterProducts('Clothing')" class="category-button">Clothing</button>
         <button onclick="filterProducts('Accessories')" class="category-button">Accessories</button>
+        <button onclick="filterProducts('Home')" class="category-button">Home</button>
+        <button onclick="filterProducts('Electronics')" class="category-button">Electronics</button>
       </div>
       <ul id="product-list" class="product-list"></ul>
     </section>
     
     <!-- Shopping Cart -->
-    <section id="cart" class="content-section hidden-content" style="display:none;">
+    <section id="cart" class="content-section hidden-content">
       <h2 class="section-title">Your Shopping Cart</h2>
       <ul id="cart-list" class="product-list"></ul>
       <div class="input-group">
@@ -180,6 +164,6 @@
     <p>&copy; 2025 Afghan Amazon. All rights reserved. | 50+ Branches Across Afghanistan</p>
   </footer>
   
-  <script src="/script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

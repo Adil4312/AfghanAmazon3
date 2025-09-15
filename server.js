@@ -1,15 +1,11 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const path = require('path');
 const Database = require('better-sqlite3');
 
 const app = express();
-const port = process.env.PORT || 3000;
-
-// Initialize database
 const db = new Database(':memory:');
 
-// Create tables
+// Create simple table with sample data
 db.exec(`
   CREATE TABLE IF NOT EXISTS products (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,20 +25,8 @@ if (productCount.count === 0) {
   insert.run('Traditional Hat', 12.99, 'Clothing', 'Kandahar');
 }
 
-// Middleware - MUST come before routes
-app.use(bodyParser.json());
-
-// Serve static files with proper headers
-app.use('/public', express.static(path.join(__dirname, 'public'), {
-  setHeaders: (res, filePath) => {
-    if (filePath.endsWith('.css')) {
-      res.setHeader('Content-Type', 'text/css');
-    }
-    if (filePath.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript');
-    }
-  }
-}));
+// Serve static files from the public directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 // API routes
 app.get('/api/products', (req, res) => {
@@ -76,6 +60,15 @@ app.get('/', (req, res) => {
 
 app.get('/pashto.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'pashto.html'));
+});
+
+// Serve CSS and JS files explicitly
+app.get('/styles.css', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'styles.css'));
+});
+
+app.get('/script.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'script.js'));
 });
 
 // Handle all other routes
